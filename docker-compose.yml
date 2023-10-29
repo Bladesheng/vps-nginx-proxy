@@ -1,0 +1,48 @@
+# https://github.com/nginx-proxy/nginx-proxy
+# https://github.com/nginx-proxy/acme-companion
+# https://github.com/nginx-proxy/acme-companion/blob/main/docs/Docker-Compose.md
+# https://linuxhandbook.com/nginx-reverse-proxy-docker/
+# make sure to enable full SSL on cloudflare / whatever
+
+services:
+    nginx-proxy:
+        image: nginxproxy/nginx-proxy
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - conf:/etc/nginx/conf.d
+            - vhost:/etc/nginx/vhost.d
+            - html:/usr/share/nginx/html
+            - certs:/etc/nginx/certs:ro
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+        networks:
+            - "nginx_proxy_net"
+
+    acme-companion:
+        image: nginxproxy/acme-companion
+        restart: unless-stopped
+        networks:
+            - "nginx_proxy_net"
+        volumes_from:
+            - nginx-proxy
+        volumes:
+            - certs:/etc/nginx/certs:rw
+            - acme:/etc/acme.sh
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        depends_on:
+            - nginx-proxy
+        environment:
+            - DEFAULT_EMAIL=keadr23@gmail.com
+
+volumes:
+    conf:
+    certs:
+    vhost:
+    html:
+    acme:
+
+networks:
+    nginx_proxy_net:
+        external: true
