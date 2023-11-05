@@ -19,6 +19,10 @@ services:
             - /var/run/docker.sock:/tmp/docker.sock:ro
         networks:
             - "nginx_proxy_net"
+        logging:
+            driver: loki
+            options:
+                loki-url: ${LOKI_URL}
 
     acme-companion:
         image: nginxproxy/acme-companion
@@ -35,6 +39,10 @@ services:
             - nginx-proxy
         environment:
             - DEFAULT_EMAIL=keadr23@gmail.com
+        logging:
+            driver: loki
+            options:
+                loki-url: ${LOKI_URL}
 
 volumes:
     conf:
